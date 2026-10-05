@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ExportButtons } from "@/components/export-buttons"
 import { notFound } from "next/navigation"
 import type { JSONContent } from "@tiptap/react"
 import { ArrowLeft } from "lucide-react"
@@ -38,6 +39,7 @@ export default async function AdminBabPage({ params }: { params: Promise<{ id: s
           </h1>
           <StatusBadge status={chapter.status} label={CHAPTER_STATUS_LABEL[chapter.status]} />
         </div>
+        {chapter.content && <ExportButtons chapterId={chapter.id} className="pt-1" />}
         {chapter.submittedAt && (
           <p className="text-sm text-muted-foreground">
             Dikirim {chapter.submittedAt.toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}

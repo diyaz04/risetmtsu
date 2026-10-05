@@ -161,6 +161,20 @@
   .paper-doc .ProseMirror table { display: block; overflow-x: auto; }
 }
 
+/* Cetak / simpan PDF */
+@media print {
+  @page { size: A4; margin: 2.54cm 2.54cm 2.54cm 3cm; }
+  html, body { background: #fff !important; }
+  [data-sonner-toaster] { display: none !important; }
+  .paper-doc { width: auto; min-height: 0; padding: 0; box-shadow: none; font-size: 12pt; }
+  .paper-doc .ProseMirror { min-height: 0; }
+  .paper-doc .ProseMirror p { text-align: justify; text-indent: 1.25cm; }
+  .paper-doc .ProseMirror p[style*="text-align"] { text-indent: 0; }
+  .paper-doc .ProseMirror tr { break-inside: avoid; }
+  .paper-doc .ProseMirror h1, .paper-doc .ProseMirror h2, .paper-doc .ProseMirror h3 { break-after: avoid; }
+  .print-break { break-before: page; }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

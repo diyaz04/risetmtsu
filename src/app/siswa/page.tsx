@@ -1,4 +1,5 @@
 import { ChapterList, Stepper, TitleHistory } from "@/components/research-progress"
+import { ExportButtons } from "@/components/export-buttons"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { requireRole } from "@/lib/auth"
 import { db } from "@/lib/db"
@@ -57,7 +58,10 @@ export default async function SiswaHome() {
             <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Judul riset</p>
             <p className="mt-1 text-lg font-semibold">{approved.title}</p>
           </div>
-          <h2 className="text-lg font-semibold">Bab Riset</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">Bab Riset</h2>
+            {chapters.some((c) => c.content) && <ExportButtons studentId={profile.id} />}
+          </div>
           <ChapterList chapters={chapters} hrefFor={(n) => `/siswa/bab/${n}`} />
         </section>
       ) : (

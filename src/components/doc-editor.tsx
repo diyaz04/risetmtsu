@@ -29,6 +29,8 @@ type Props = {
   initialContent: JSONContent | null
   editable: boolean
   onChange?: (json: JSONContent, wordCount: number) => void
+  /** hanya kertas (tanpa bingkai & latar), untuk tampilan cetak */
+  bare?: boolean
 }
 
 function countWords(text: string) {
@@ -180,7 +182,7 @@ function Toolbar({ editor }: { editor: Editor }) {
   )
 }
 
-export function DocEditor({ initialContent, editable, onChange }: Props) {
+export function DocEditor({ initialContent, editable, onChange, bare }: Props) {
   const editor = useEditor({
     immediatelyRender: false, // hindari mismatch SSR
     editable,
@@ -201,6 +203,14 @@ export function DocEditor({ initialContent, editable, onChange }: Props) {
   }, [editor, editable])
 
   if (!editor) return <div className="h-96 animate-pulse rounded-lg bg-muted" />
+
+  if (bare) {
+    return (
+      <div className="paper-doc mx-auto">
+        <EditorContent editor={editor} />
+      </div>
+    )
+  }
 
   return (
     <div className="rounded-xl border bg-white">

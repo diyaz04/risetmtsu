@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ExportButtons } from "@/components/export-buttons"
 import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import { ProgressBar } from "@/components/progress-bar"
@@ -80,7 +81,10 @@ export default async function AdminRisetDetail({ params }: { params: Promise<{ i
                 <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Judul riset</p>
                 <p className="mt-1 text-lg font-semibold">{approved.title}</p>
               </div>
-              <h2 className="text-lg font-semibold">Bab Riset</h2>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">Bab Riset</h2>
+            {chapters.some((c) => c.content) && <ExportButtons studentId={student.id} />}
+          </div>
               <ChapterList chapters={chapters} hrefFor={(n) => `/admin/riset/${id}/bab/${n}`} />
             </section>
           )}
