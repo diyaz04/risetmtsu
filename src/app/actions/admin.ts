@@ -1,5 +1,7 @@
 "use server"
 
+import { randomUUID } from "node:crypto"
+import ExcelJS from "exceljs"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
@@ -15,7 +17,11 @@ export type CreateResult = {
   error?: string
 }
 
-type StudentInput = { name: string; nis?: string; kelas?: string }
+// password opsional: kosong -> dibuat acak. Dipakai sebagai password awal (wajib diganti saat login pertama).
+type StudentInput = { name: string; nis?: string; kelas?: string; password?: string }
+
+const MIN_PASSWORD = 6
+const MAX_IMPORT = 500
 
 async function takenStudentUsernames() {
   const rows = await db.user.findMany({
@@ -28,29 +34,54 @@ async function takenStudentUsernames() {
 async function createStudents(inputs: StudentInput[]): Promise<CreateResult> {
   const credentials: Credential[] = []
   const skipped: CreateResult["skipped"] = []
-  const taken = await takenStudentUsernames()
+
+  const [taken, existingNis] = await Promise.all([
+    takenStudentUsernames(),
+    db.studentProfile.findMany({
+      where: { nis: { in: inputs.map((i) => i.nis?.trim()).filter((n): n is string => !!n) } },
+      select: { nis: true },
+    }),
+  ])
+  const usedNis = new Set(existingNis.map((s) => s.nis))
+
+  const users: Prisma.UserCreateManyInput[] = []
+  const profiles: Prisma.StudentProfileCreateManyInput[] = []
 
   for (const input of inputs) {
     const name = input.name.trim().replace(/\s+/g, " ")
     if (!name) continue
+    if (name.length < 3) {
+      skipped.push({ line: name, reason: "Nama minimal 3 huruf" })
+      continue
+    }
     const nis = input.nis?.trim() || null
+    if (nis && usedNis.has(nis)) {
+      skipped.push({ line: name, reason: `NIS ${nis} sudah terdaftar` })
+      continue
+    }
+    const given = input.password?.trim()
+    if (given && given.length < MIN_PASSWORD) {
+      skipped.push({ line: name, reason: `Password minimal ${MIN_PASSWORD} karakter` })
+      continue
+    }
+
     const username = uniqueStudentUsername(name, taken)
-    const password = generatePassword()
+    const password = given || generatePassword()
+    const id = randomUUID()
+    taken.add(username)
+    if (nis) usedNis.add(nis)
+
+    users.push({ id, name, username, passwordHash: await hashPassword(password), role: "STUDENT" })
+    profiles.push({ userId: id, nis, kelas: input.kelas?.trim() || null })
+    credentials.push({ name, username, password })
+  }
+
+  if (users.length > 0) {
     try {
-      await db.user.create({
-        data: {
-          name,
-          username,
-          passwordHash: await hashPassword(password),
-          role: "STUDENT",
-          student: { create: { nis, kelas: input.kelas?.trim() || null } },
-        },
-      })
-      taken.add(username)
-      credentials.push({ name, username, password })
-    } catch (e) {
-      const dupNis = e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002"
-      skipped.push({ line: name, reason: dupNis ? `NIS ${nis} sudah terdaftar` : "Gagal menyimpan" })
+      // dua query sekaligus dalam satu transaksi, bukan satu per siswa
+      await db.$transaction([db.user.createMany({ data: users }), db.studentProfile.createMany({ data: profiles })])
+    } catch {
+      return { credentials: [], skipped: [], error: "Gagal menyimpan data siswa. Coba lagi." }
     }
   }
   revalidatePath("/admin", "layout")
@@ -61,31 +92,66 @@ const studentSchema = z.object({
   name: z.string().trim().min(3, "Nama lengkap minimal 3 huruf"),
   nis: z.string().trim().optional(),
   kelas: z.string().trim().optional(),
+  password: z.string().trim().optional(),
 })
 
 export async function addStudent(_prev: CreateResult | null, formData: FormData): Promise<CreateResult> {
   await requireRole("ADMIN")
   const parsed = studentSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { credentials: [], skipped: [], error: parsed.error.issues[0].message }
-  return createStudents([parsed.data])
+  const res = await createStudents([parsed.data])
+  // satu siswa saja: tampilkan alasan penolakan sebagai error form
+  if (res.credentials.length === 0 && res.skipped.length > 0 && !res.error) {
+    return { credentials: [], skipped: [], error: res.skipped[0].reason }
+  }
+  return res
 }
 
-/** Setiap baris: nama, nis, kelas (dipisah koma, titik koma, atau tab). Kolom nis & kelas opsional. */
+/** Baris tabel mentah dari file .xlsx / .csv: kolom A nama, B NIS, C kelas, D password (opsional). */
+async function readRows(file: File): Promise<string[][]> {
+  if (/\.csv$/i.test(file.name)) {
+    return (await file.text())
+      .split(/\r?\n/)
+      .filter((l) => l.trim())
+      .map((l) => l.split(/[,;\t]/).map((c) => c.trim()))
+  }
+  const wb = new ExcelJS.Workbook()
+  await wb.xlsx.load(await file.arrayBuffer())
+  const sheet = wb.worksheets[0]
+  if (!sheet) return []
+  const rows: string[][] = []
+  sheet.eachRow((row) => rows.push([1, 2, 3, 4].map((i) => row.getCell(i).text.trim())))
+  return rows
+}
+
 export async function importStudents(_prev: CreateResult | null, formData: FormData): Promise<CreateResult> {
   await requireRole("ADMIN")
-  const text = String(formData.get("rows") ?? "")
-  const inputs = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [name = "", nis, kelas] = line.split(/[,;\t]/).map((c) => c.trim())
-      return { name, nis, kelas }
-    })
-    // lewati baris header
-    .filter((r, i) => !(i === 0 && /^nama/i.test(r.name)))
-  if (inputs.length === 0) return { credentials: [], skipped: [], error: "Tidak ada data siswa" }
-  if (inputs.length > 500) return { credentials: [], skipped: [], error: "Maksimal 500 siswa sekali impor" }
+  const fail = (error: string): CreateResult => ({ credentials: [], skipped: [], error })
+
+  let rows: string[][]
+  const file = formData.get("file")
+  if (file instanceof File && file.size > 0) {
+    if (file.size > 2_000_000) return fail("File terlalu besar (maksimal 2 MB)")
+    if (!/\.(xlsx|csv)$/i.test(file.name)) return fail("Format file harus .xlsx atau .csv")
+    try {
+      rows = await readRows(file)
+    } catch {
+      return fail("File tidak bisa dibaca. Pakai template yang disediakan.")
+    }
+  } else {
+    // tempel teks (mis. salin dari Excel)
+    rows = String(formData.get("rows") ?? "")
+      .split(/\r?\n/)
+      .filter((l) => l.trim())
+      .map((l) => l.split(/[,;\t]/).map((c) => c.trim()))
+  }
+
+  const inputs = rows
+    .filter((r, i) => !(i === 0 && /^nama/i.test(r[0] ?? ""))) // lewati baris header
+    .map(([name = "", nis, kelas, password]) => ({ name, nis, kelas, password }))
+    .filter((r) => r.name)
+  if (inputs.length === 0) return fail("Tidak ada data siswa")
+  if (inputs.length > MAX_IMPORT) return fail(`Maksimal ${MAX_IMPORT} siswa sekali impor`)
   return createStudents(inputs)
 }
 

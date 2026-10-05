@@ -1,4 +1,4 @@
-import { FileSpreadsheet, UserPlus } from "lucide-react"
+import { Download, FileSpreadsheet, UserPlus } from "lucide-react"
 import { addStudent, importStudents } from "@/app/actions/admin"
 import { CreateDialog } from "@/components/create-dialog"
 import { UserRowActions } from "@/components/user-row-actions"
@@ -9,6 +9,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { db } from "@/lib/db"
 import { FIELD_LABEL } from "@/lib/labels"
+
+// impor banyak siswa menghitung hash password satu per satu; beri waktu lebih di hosting serverless
+export const maxDuration = 60
 
 export default async function AdminSiswaPage() {
   const students = await db.studentProfile.findMany({
@@ -30,17 +33,31 @@ export default async function AdminSiswaPage() {
             triggerLabel="Impor Banyak"
             triggerIcon={<FileSpreadsheet />}
             title="Impor siswa"
-            description="Satu siswa per baris: nama, NIS, kelas (NIS dan kelas boleh dikosongkan). Salin dari Excel juga bisa."
+            description="Unggah file Excel sesuai template. Kolom: Nama Lengkap, NIS, Kelas, Password Awal."
             action={importStudents}
             submitLabel="Impor"
           >
-            <Textarea
-              name="rows"
-              rows={9}
-              placeholder={"Ahmad Fauzi, 12345, 7A\nSiti Aisyah, 12346, 7A"}
-              className="font-mono text-xs"
-              required
-            />
+            <a
+              href="/admin/siswa/template"
+              download
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <Download className="size-4" /> Unduh template Excel
+            </a>
+            <div className="space-y-2">
+              <Label htmlFor="file">File Excel (.xlsx) atau CSV</Label>
+              <Input id="file" name="file" type="file" accept=".xlsx,.csv" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rows">Atau tempel data (nama, NIS, kelas, password)</Label>
+              <Textarea
+                id="rows"
+                name="rows"
+                rows={5}
+                placeholder={"Ahmad Fauzi, 12345, 7A, siswa123\nSiti Aisyah, 12346, 7A"}
+                className="font-mono text-xs"
+              />
+            </div>
           </CreateDialog>
           <CreateDialog
             triggerLabel="Tambah Siswa"
@@ -63,6 +80,11 @@ export default async function AdminSiswaPage() {
                 <Label htmlFor="kelas">Kelas (opsional)</Label>
                 <Input id="kelas" name="kelas" placeholder="7A" />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password awal (opsional)</Label>
+              <Input id="password" name="password" placeholder="Kosongkan untuk password acak" />
+              <p className="text-xs text-muted-foreground">Minimal 6 karakter. Siswa wajib menggantinya saat login pertama.</p>
             </div>
           </CreateDialog>
         </div>
