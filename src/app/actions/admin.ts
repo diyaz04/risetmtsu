@@ -20,6 +20,21 @@ export type CreateResult = {
 // password opsional: kosong -> dibuat acak. Dipakai sebagai password awal (wajib diganti saat login pertama).
 type StudentInput = { name: string; nis?: string; kelas?: string; password?: string }
 
+/**
+ * Di produksi, error yang dilempar dari server action disamarkan Next.js (hanya "digest").
+ * Tangkap di sini agar pesan sebenarnya tampil di form dan tercatat di log server.
+ */
+async function guard(label: string, fn: () => Promise<CreateResult>): Promise<CreateResult> {
+  try {
+    return await fn()
+  } catch (e) {
+    console.error(`[${label}]`, e)
+    const msg = e instanceof Error ? e.message : String(e)
+    const last = msg.split("\n").map((l) => l.trim()).filter(Boolean).pop() ?? "kesalahan tidak diketahui"
+    return { credentials: [], skipped: [], error: `Gagal menyimpan: ${last.slice(0, 300)}` }
+  }
+}
+
 const MIN_PASSWORD = 6
 const MAX_IMPORT = 500
 
@@ -99,7 +114,7 @@ export async function addStudent(_prev: CreateResult | null, formData: FormData)
   await requireRole("ADMIN")
   const parsed = studentSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { credentials: [], skipped: [], error: parsed.error.issues[0].message }
-  const res = await createStudents([parsed.data])
+  const res = await guard("addStudent", () => createStudents([parsed.data]))
   // satu siswa saja: tampilkan alasan penolakan sebagai error form
   if (res.credentials.length === 0 && res.skipped.length > 0 && !res.error) {
     return { credentials: [], skipped: [], error: res.skipped[0].reason }
@@ -152,7 +167,7 @@ export async function importStudents(_prev: CreateResult | null, formData: FormD
     .filter((r) => r.name)
   if (inputs.length === 0) return fail("Tidak ada data siswa")
   if (inputs.length > MAX_IMPORT) return fail(`Maksimal ${MAX_IMPORT} siswa sekali impor`)
-  return createStudents(inputs)
+  return guard("importStudents", () => createStudents(inputs))
 }
 
 const teacherSchema = z.object({
@@ -167,21 +182,23 @@ export async function addTeacher(_prev: CreateResult | null, formData: FormData)
   if (!parsed.success) return { credentials: [], skipped: [], error: parsed.error.issues[0].message }
   const { name, username, field } = parsed.data
 
-  if (await db.user.findUnique({ where: { username } })) {
-    return { credentials: [], skipped: [], error: "Username sudah dipakai" }
-  }
-  const password = generatePassword()
-  await db.user.create({
-    data: {
-      name,
-      username,
-      passwordHash: await hashPassword(password),
-      role: "TEACHER",
-      teacher: { create: { field } },
-    },
+  return guard("addTeacher", async () => {
+    if (await db.user.findUnique({ where: { username } })) {
+      return { credentials: [], skipped: [], error: "Username sudah dipakai" }
+    }
+    const password = generatePassword()
+    await db.user.create({
+      data: {
+        name,
+        username,
+        passwordHash: await hashPassword(password),
+        role: "TEACHER",
+        teacher: { create: { field } },
+      },
+    })
+    revalidatePath("/admin", "layout")
+    return { credentials: [{ name, username, password }], skipped: [] }
   })
-  revalidatePath("/admin", "layout")
-  return { credentials: [{ name, username, password }], skipped: [] }
 }
 
 export async function resetPassword(userId: string): Promise<Credential | { error: string }> {
