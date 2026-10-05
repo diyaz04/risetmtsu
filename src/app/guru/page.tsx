@@ -54,9 +54,9 @@ export default async function GuruHome() {
           <TableHeader>
             <TableRow>
               <TableHead>Nama</TableHead>
-              <TableHead>Kelas</TableHead>
-              <TableHead>Judul</TableHead>
-              <TableHead>Bab di-ACC</TableHead>
+              <TableHead className="hidden sm:table-cell">Kelas</TableHead>
+              <TableHead className="hidden md:table-cell">Judul</TableHead>
+              <TableHead className="hidden sm:table-cell">Bab di-ACC</TableHead>
               <TableHead>Perlu tindakan</TableHead>
             </TableRow>
           </TableHeader>
@@ -84,9 +84,16 @@ export default async function GuruHome() {
                     <Link href={`/guru/siswa/${s.id}`} className="hover:text-primary hover:underline">
                       {s.user.name}
                     </Link>
+                    <p className="text-xs font-normal text-muted-foreground sm:hidden">
+                      {s.kelas ? `Kelas ${s.kelas} · ` : ""}
+                      {approved}/5 bab
+                    </p>
+                    <p className="line-clamp-2 text-xs font-normal text-muted-foreground md:hidden">
+                      {s.research?.title ?? pendingSubmission?.title ?? "Belum ada judul"}
+                    </p>
                   </TableCell>
-                  <TableCell>{s.kelas ?? "-"}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">{s.kelas ?? "-"}</TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {s.research?.title ??
                       (pendingSubmission ? (
                         <span className="italic text-muted-foreground">{pendingSubmission.title}</span>
@@ -94,7 +101,7 @@ export default async function GuruHome() {
                         <Badge variant="outline">Belum ada judul</Badge>
                       ))}
                   </TableCell>
-                  <TableCell>{approved} / 5</TableCell>
+                  <TableCell className="hidden sm:table-cell">{approved} / 5</TableCell>
                   <TableCell>
                     {pendingTitle && <Badge className="bg-amber-100 text-amber-700">Judul menunggu</Badge>}
                     {pendingChapters > 0 && <Badge className="bg-amber-100 text-amber-700">{pendingChapters} bab menunggu</Badge>}

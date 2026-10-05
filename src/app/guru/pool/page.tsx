@@ -27,8 +27,8 @@ export default async function PoolPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Nama</TableHead>
-              <TableHead>NIS</TableHead>
-              <TableHead>Kelas</TableHead>
+              <TableHead className="hidden sm:table-cell">NIS</TableHead>
+              <TableHead className="hidden sm:table-cell">Kelas</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -42,9 +42,14 @@ export default async function PoolPage() {
             )}
             {students.map((s) => (
               <TableRow key={s.id}>
-                <TableCell className="font-medium">{s.user.name}</TableCell>
-                <TableCell>{s.nis ?? "-"}</TableCell>
-                <TableCell>{s.kelas ?? "-"}</TableCell>
+                <TableCell className="font-medium">
+                  {s.user.name}
+                  <p className="text-xs font-normal text-muted-foreground sm:hidden">
+                    {[s.nis && `NIS ${s.nis}`, s.kelas && `Kelas ${s.kelas}`].filter(Boolean).join(" · ") || "-"}
+                  </p>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">{s.nis ?? "-"}</TableCell>
+                <TableCell className="hidden sm:table-cell">{s.kelas ?? "-"}</TableCell>
                 <TableCell className="text-right">
                   <ClaimButton studentId={s.id} />
                 </TableCell>

@@ -116,15 +116,16 @@ export function ChapterEditor({
             {indicator.text}
             <span className="text-muted-foreground">· {words} kata</span>
           </p>
-          <div className="flex gap-2">
+          <div className="flex w-full gap-2 sm:w-auto">
             <Button
+              className="flex-1 sm:flex-none"
               variant="outline"
               onClick={() => persist().then((ok) => ok && toast.success("Tersimpan"))}
               disabled={state === "saving"}
             >
               <Save /> Simpan
             </Button>
-            <Button onClick={() => persist().then((ok) => ok && setConfirmOpen(true))}>
+            <Button className="flex-1 sm:flex-none" onClick={() => persist().then((ok) => ok && setConfirmOpen(true))}>
               <Send /> Kirim ke Guru
             </Button>
           </div>

@@ -8,6 +8,13 @@ export const FIELD_LABEL: Record<ResearchField, string> = {
 
 export const FIELDS = Object.keys(FIELD_LABEL) as ResearchField[]
 
+/** Warna pembeda tiap bidang (badge/aksen kartu). */
+export const FIELD_TONE: Record<ResearchField, { badge: string; accent: string }> = {
+  AGAMA: { badge: "bg-emerald-100 text-emerald-700", accent: "border-t-emerald-500" },
+  HUMANIORA: { badge: "bg-sky-100 text-sky-700", accent: "border-t-sky-500" },
+  SAINS: { badge: "bg-violet-100 text-violet-700", accent: "border-t-violet-500" },
+}
+
 export const CHAPTER_TITLES = [
   "Pendahuluan",
   "Kajian Pustaka",

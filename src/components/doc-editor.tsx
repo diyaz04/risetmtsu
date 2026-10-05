@@ -60,7 +60,7 @@ function ToolButton({
         if (!disabled) onClick()
       }}
       className={cn(
-        "flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-40 [&_svg]:size-4",
+        "flex size-9 shrink-0 items-center justify-center rounded-md sm:size-8 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-40 [&_svg]:size-4",
         active && "bg-accent text-emerald-700",
       )}
     >
@@ -69,7 +69,7 @@ function ToolButton({
   )
 }
 
-const Divider = () => <span className="mx-1 h-5 w-px bg-border" />
+const Divider = () => <span className="mx-1 h-5 w-px shrink-0 bg-border" />
 
 function Toolbar({ editor }: { editor: Editor }) {
   const s = useEditorState({
@@ -100,7 +100,7 @@ function Toolbar({ editor }: { editor: Editor }) {
   const chain = () => editor.chain().focus()
 
   return (
-    <div className="sticky top-14 z-[5] flex flex-wrap items-center gap-0.5 border-b bg-white px-3 py-1.5">
+    <div className="sticky top-0 z-[5] flex flex-nowrap items-center gap-0.5 overflow-x-auto border-b bg-white px-2 py-1.5 sm:top-14 sm:flex-wrap sm:px-3">
       <ToolButton title="Urungkan" onClick={() => chain().undo().run()} disabled={!s.canUndo}>
         <Undo2 />
       </ToolButton>
@@ -116,7 +116,7 @@ function Toolbar({ editor }: { editor: Editor }) {
           if (v === "p") chain().setParagraph().run()
           else chain().toggleHeading({ level: Number(v) as 1 | 2 | 3 }).run()
         }}
-        className="h-8 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="h-9 shrink-0 rounded-md border border-input bg-background px-2 text-base outline-none sm:h-8 sm:text-sm focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <option value="p">Paragraf</option>
         <option value="1">Judul Bab</option>
@@ -205,7 +205,7 @@ export function DocEditor({ initialContent, editable, onChange }: Props) {
   return (
     <div className="rounded-xl border bg-white">
       {editable && <Toolbar editor={editor} />}
-      <div className="overflow-x-auto bg-muted/60 px-2 py-6 sm:px-6">
+      <div className="overflow-x-auto bg-muted/60 px-2 py-3 sm:px-6 sm:py-6">
         <div className="paper-doc mx-auto">
           <EditorContent editor={editor} />
         </div>

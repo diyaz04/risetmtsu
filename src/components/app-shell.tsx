@@ -1,9 +1,10 @@
 import Link from "next/link"
 import { GraduationCap, KeyRound, LogOut } from "lucide-react"
 import { logout } from "@/app/actions/auth"
+import { NavLinks, type NavItem } from "@/components/nav-links"
 import { Button } from "@/components/ui/button"
 
-export type NavItem = { href: string; label: string }
+export type { NavItem }
 
 export function AppShell({
   roleLabel,
@@ -18,42 +19,36 @@ export function AppShell({
 }) {
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-10 border-b bg-white/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
+      {/* di HP header ikut tergulung; toolbar editor yang menempel di atas */}
+      <header className="z-10 border-b bg-white/90 backdrop-blur sm:sticky sm:top-0">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 sm:gap-6">
           <div className="flex items-center gap-2 font-semibold">
             <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-brand text-white">
               <GraduationCap className="size-4" />
             </span>
             <span className="hidden sm:inline">Riset MTs</span>
           </div>
-          <nav className="flex flex-1 items-center gap-1 text-sm">
-            {nav.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                {n.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="text-right text-xs leading-tight">
-            <p className="font-medium">{userName}</p>
-            <p className="text-muted-foreground">{roleLabel}</p>
+          <NavLinks items={nav} className="hidden flex-1 sm:flex" />
+          <div className="min-w-0 flex-1 text-right text-xs leading-tight sm:flex-none">
+            <p className="truncate font-medium">{userName}</p>
+            <p className="truncate text-muted-foreground">{roleLabel}</p>
           </div>
-          <Link href="/ganti-password">
+          <Link href="/ganti-password" className="shrink-0">
             <Button variant="outline" size="icon" type="button" aria-label="Ganti password" title="Ganti password">
               <KeyRound />
             </Button>
           </Link>
-          <form action={logout}>
-            <Button variant="outline" size="icon" type="submit" aria-label="Keluar">
+          <form action={logout} className="shrink-0">
+            <Button variant="outline" size="icon" type="submit" aria-label="Keluar" title="Keluar">
               <LogOut />
             </Button>
           </form>
         </div>
+        {nav.length > 1 && (
+          <NavLinks items={nav} className="overflow-x-auto border-t px-3 py-1.5 sm:hidden" />
+        )}
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-5 sm:py-8">{children}</main>
     </div>
   )
 }

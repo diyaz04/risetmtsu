@@ -45,7 +45,7 @@ export default async function AdminGuruPage() {
               name="field"
               required
               defaultValue=""
-              className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-base outline-none sm:text-sm focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <option value="" disabled>
                 Pilih bidang...
@@ -65,9 +65,9 @@ export default async function AdminGuruPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Nama</TableHead>
-              <TableHead>Username</TableHead>
+              <TableHead className="hidden md:table-cell">Username</TableHead>
               <TableHead>Bidang</TableHead>
-              <TableHead>Siswa dibimbing</TableHead>
+              <TableHead className="hidden sm:table-cell">Siswa dibimbing</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -81,12 +81,17 @@ export default async function AdminGuruPage() {
             )}
             {teachers.map((t) => (
               <TableRow key={t.id}>
-                <TableCell className="font-medium">{t.user.name}</TableCell>
-                <TableCell className="text-muted-foreground">{t.user.username}</TableCell>
+                <TableCell className="font-medium">
+                  {t.user.name}
+                  <p className="break-all text-xs font-normal text-muted-foreground md:hidden">
+                    {t.user.username} · {t._count.students} siswa
+                  </p>
+                </TableCell>
+                <TableCell className="hidden text-muted-foreground md:table-cell">{t.user.username}</TableCell>
                 <TableCell>
                   <Badge>{FIELD_LABEL[t.field]}</Badge>
                 </TableCell>
-                <TableCell>{t._count.students}</TableCell>
+                <TableCell className="hidden sm:table-cell">{t._count.students}</TableCell>
                 <TableCell>
                   <UserRowActions userId={t.userId} name={t.user.name} />
                 </TableCell>

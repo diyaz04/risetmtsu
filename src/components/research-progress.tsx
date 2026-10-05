@@ -18,12 +18,12 @@ export function Stepper({ titleApproved, chapters }: { titleApproved: boolean; c
   const current = steps.findIndex((s) => !s.done)
 
   return (
-    <ol className="flex flex-wrap items-center gap-2 text-sm">
+    <ol className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
       {steps.map((s, i) => (
-        <li key={s.label} className="flex items-center gap-2">
+        <li key={s.label} className="flex shrink-0 items-center gap-2">
           <span
             className={cn(
-              "flex items-center gap-1.5 rounded-full border px-3 py-1",
+              "flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1",
               s.done && "border-transparent bg-gradient-brand text-white",
               !s.done && i === current && "border-emerald-500 text-emerald-700",
               !s.done && i !== current && "text-muted-foreground",

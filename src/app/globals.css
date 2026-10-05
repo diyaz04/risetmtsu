@@ -153,7 +153,12 @@
 .paper-doc .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: #9ca3af; float: left; height: 0; pointer-events: none; }
 
 @media (max-width: 900px) {
-  .paper-doc { width: 100%; min-width: 0; padding: 1.5rem; min-height: 20cm; }
+  .paper-doc { width: 100%; min-width: 0; padding: 1.25rem; min-height: 20cm; font-size: 11.5pt; }
+  .paper-doc .ProseMirror { min-height: 16cm; }
+  /* rata kiri-kanan di layar sempit membuat spasi renggang */
+  .paper-doc .ProseMirror p { text-align: left; text-indent: 0.8cm; }
+  .paper-doc .ProseMirror ul, .paper-doc .ProseMirror ol { padding-left: 1.1cm; }
+  .paper-doc .ProseMirror table { display: block; overflow-x: auto; }
 }
 
 @layer base {

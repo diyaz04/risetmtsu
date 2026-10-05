@@ -9,6 +9,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       userName={user.name}
       nav={[
         { href: "/admin", label: "Dashboard" },
+        { href: "/admin/riset", label: "Riset" },
         { href: "/admin/siswa", label: "Siswa" },
         { href: "/admin/guru", label: "Guru" },
       ]}

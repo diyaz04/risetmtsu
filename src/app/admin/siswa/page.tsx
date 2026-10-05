@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Download, FileSpreadsheet, UserPlus } from "lucide-react"
 import { addStudent, importStudents } from "@/app/actions/admin"
 import { CreateDialog } from "@/components/create-dialog"
@@ -27,7 +28,7 @@ export default async function AdminSiswaPage() {
           <h1 className="text-2xl font-semibold">Siswa</h1>
           <p className="text-sm text-muted-foreground">{students.length} siswa terdaftar</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <CreateDialog
             variant="outline"
             triggerLabel="Impor Banyak"
@@ -95,10 +96,10 @@ export default async function AdminSiswaPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Nama</TableHead>
-              <TableHead>Username</TableHead>
-              <TableHead>Kelas</TableHead>
+              <TableHead className="hidden md:table-cell">Username</TableHead>
+              <TableHead className="hidden md:table-cell">Kelas</TableHead>
               <TableHead>Bidang</TableHead>
-              <TableHead>Pembimbing</TableHead>
+              <TableHead className="hidden md:table-cell">Pembimbing</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -112,13 +113,22 @@ export default async function AdminSiswaPage() {
             )}
             {students.map((s) => (
               <TableRow key={s.id}>
-                <TableCell className="font-medium">{s.user.name}</TableCell>
-                <TableCell className="text-muted-foreground">{s.user.username}</TableCell>
-                <TableCell>{s.kelas ?? "-"}</TableCell>
+                <TableCell className="font-medium">
+                  <Link href={`/admin/riset/${s.id}`} className="hover:text-primary hover:underline">
+                    {s.user.name}
+                  </Link>
+                  <p className="break-all text-xs font-normal text-muted-foreground md:hidden">
+                    {s.user.username}
+                    {s.kelas ? ` · Kelas ${s.kelas}` : ""}
+                    {s.teacher ? ` · ${s.teacher.user.name}` : ""}
+                  </p>
+                </TableCell>
+                <TableCell className="hidden text-muted-foreground md:table-cell">{s.user.username}</TableCell>
+                <TableCell className="hidden md:table-cell">{s.kelas ?? "-"}</TableCell>
                 <TableCell>
                   {s.field ? <Badge>{FIELD_LABEL[s.field]}</Badge> : <Badge variant="outline">Belum diklaim</Badge>}
                 </TableCell>
-                <TableCell>{s.teacher?.user.name ?? "-"}</TableCell>
+                <TableCell className="hidden md:table-cell">{s.teacher?.user.name ?? "-"}</TableCell>
                 <TableCell>
                   <UserRowActions userId={s.userId} name={s.user.name} studentId={s.id} claimed={!!s.teacherId} />
                 </TableCell>
