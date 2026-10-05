@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import type { JSONContent } from "@tiptap/react"
 import { ArrowLeft, Printer } from "lucide-react"
 import { DocEditor } from "@/components/doc-editor"
+import { Logo } from "@/components/logo"
 import { Button } from "@/components/ui/button"
 
 export type PrintCover = {
@@ -51,7 +52,8 @@ export function PrintView({
       <div className="space-y-6 px-2 py-6 print:space-y-0 print:p-0 sm:px-6">
         {cover && (
           <div className="paper-doc mx-auto flex flex-col items-center text-center">
-            <p className="mt-24 text-2xl font-bold">LAPORAN RISET</p>
+            <Logo size={128} className="mt-12" />
+            <p className="mt-8 text-2xl font-bold">LAPORAN RISET</p>
             <p className="mt-8 text-xl font-bold uppercase">{cover.title}</p>
             <p className="mt-16">Disusun oleh:</p>
             <p className="mt-2 text-xl font-bold">{cover.studentName}</p>

@@ -121,6 +121,17 @@
   background-image: linear-gradient(135deg, #10b981 0%, #16a34a 55%, #15803d 100%);
 }
 
+/* Animasi halaman awal */
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes glow { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.06); } }
+@utility animate-float { animation: float 6s ease-in-out infinite; }
+@utility animate-fade-up { animation: fade-up 0.7s ease-out both; }
+@utility animate-glow { animation: glow 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-fade-up, .animate-glow { animation: none; }
+}
+
 /* Kertas A4: 21cm lebar, margin ala dokumen riset (4-3-3-3 cm disederhanakan) */
 .paper-doc {
   width: 21cm;

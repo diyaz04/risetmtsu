@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistem Riset MTs KH A Wahab Muhsin",
+  title: "Sistem Manajemen Riset MTs KH A Wahab Muhsin",
   description: "Pengelolaan riset sederhana siswa MTs KH A Wahab Muhsin",
 };
 

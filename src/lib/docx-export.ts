@@ -1,9 +1,11 @@
 import "server-only"
+import { LOGO_PNG_BASE64 } from "@/lib/logo-data"
 import {
   AlignmentType,
   BorderStyle,
   Document,
   Footer,
+  ImageRun,
   LevelFormat,
   Packer,
   PageNumber,
@@ -245,7 +247,19 @@ function cover(meta: CoverMeta): ISectionOptions {
   return {
     properties: pageProps,
     children: [
-      center("LAPORAN RISET", { bold: true, size: 32, before: 1800, after: 360 }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 900, after: 360 },
+        children: [
+          new ImageRun({
+            type: "png",
+            data: Buffer.from(LOGO_PNG_BASE64, "base64"),
+            transformation: { width: 110, height: 110 },
+            altText: { name: "Logo", title: "Logo sekolah", description: "Logo MTs KH A Wahab Muhsin" },
+          }),
+        ],
+      }),
+      center("LAPORAN RISET", { bold: true, size: 32, after: 360 }),
       center(meta.title, { bold: true, size: 28, caps: true, after: 1200 }),
       center("Disusun oleh:", { after: 120 }),
       center(meta.studentName, { bold: true, size: 28, after: 120 }),
