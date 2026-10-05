@@ -11,7 +11,8 @@ export default async function GuruLayout({ children }: { children: React.ReactNo
       roleLabel={label}
       userName={user.name}
       nav={[
-        { href: "/guru", label: "Siswa Saya" },
+        { href: "/guru", label: "Dashboard" },
+        { href: "/guru/siswa", label: "Siswa Saya" },
         { href: "/guru/pool", label: "Pool Siswa" },
       ]}
     >

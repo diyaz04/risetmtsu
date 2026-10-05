@@ -33,7 +33,7 @@ export default async function GuruSiswaDetail({ params }: { params: Promise<{ id
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <Link href="/guru" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <Link href="/guru/siswa" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" /> Siswa Saya
         </Link>
         <h1 className="text-2xl font-semibold">{student.user.name}</h1>
